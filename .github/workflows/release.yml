@@ -1,0 +1,58 @@
+name: Convert HaGeZi Rule-sets
+
+on:
+  push:
+    tags:
+      - 'v*'
+  schedule:
+    - cron: '0 3 * * *'  # Runs every day at 3 AM UTC
+
+jobs:
+  build:
+    name: Convert and Upload Rule-sets
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        list: 
+          - normal
+          - pro
+        include:
+          - list: normal
+            filename: "multi.txt"
+          - list: pro
+            filename: "pro.txt"
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up SagerNet APT Repository
+        run: |
+          sudo mkdir -p /etc/apt/keyrings
+          sudo curl -fsSL https://sing-box.app/gpg.key -o /etc/apt/keyrings/sagernet.asc
+          sudo chmod a+r /etc/apt/keyrings/sagernet.asc
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/sagernet.asc] https://deb.sagernet.org/ * *" | sudo tee /etc/apt/sources.list.d/sagernet.list > /dev/null
+          sudo apt-get update
+
+      - name: Install sing-box
+        run: |
+          sudo apt-get install -y sing-box
+          sing-box version
+
+      - name: Download HaGeZi List - ${{ matrix.list }}
+        run: |
+          wget -O hagezi-${{ matrix.list }}.txt "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/${{ matrix.filename }}"
+
+      - name: Convert List to Binary Rule-set - ${{ matrix.list }}
+        run: |
+          sing-box rule-set convert --type adblock --output hagezi-${{ matrix.list }}.srs hagezi-${{ matrix.list }}.txt
+          echo "Generated rule-set: hagezi-${{ matrix.list }}.srs"
+          ls -lh hagezi-${{ matrix.list }}.srs
+
+      - name: Upload to Release - ${{ matrix.list }}
+        uses: softprops/action-gh-release@v2
+        with:
+          files: hagezi-${{ matrix.list }}.srs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
