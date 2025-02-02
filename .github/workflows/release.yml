@@ -19,6 +19,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Generate Tag Name
+        id: set_tag
+        run: |
+          TAG_NAME="daily-$(date +'%Y%m%d')"
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+          echo "TAG_NAME=$TAG_NAME"
+
       - name: Create and Push New Tag
         id: tag
         uses: anothrNick/github-tag-action@v1
@@ -26,7 +33,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: false  # No auto version bump
           WITH_V: false
-          CUSTOM_TAG: daily-$(date +'%Y%m%d')
+          CUSTOM_TAG: ${{ env.TAG_NAME }}
 
   build:
     name: Convert and Upload Rule-sets
