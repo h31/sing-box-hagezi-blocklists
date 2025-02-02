@@ -46,7 +46,7 @@ jobs:
 
       - name: Convert List to Binary Rule-set - ${{ matrix.list }}
         run: |
-          sing-box rule-set convert --type adblock --output hagezi-${{ matrix.list }}.srs hagezi-${{ matrix.list }}.txt
+          sing-box rule-set convert --type adguard --output hagezi-${{ matrix.list }}.srs hagezi-${{ matrix.list }}.txt
           echo "Generated rule-set: hagezi-${{ matrix.list }}.srs"
           ls -lh hagezi-${{ matrix.list }}.srs
 
