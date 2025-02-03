@@ -89,3 +89,16 @@ jobs:
           files: hagezi-${{ matrix.list }}.srs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+  cleanup:
+    name: Cleanup Old Releases & Tags
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Delete Old Releases (Keep Only 3 Latest)
+        uses: Nats-ji/delete-old-releases@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          keep-count: 3
+          remove-tags: true
