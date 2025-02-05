@@ -103,4 +103,4 @@ jobs:
           release-keep-count: 2
           release-drop-tag: true
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
