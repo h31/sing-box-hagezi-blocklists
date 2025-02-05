@@ -97,8 +97,10 @@ jobs:
 
     steps:
       - name: Delete Old Releases (Keep Only 3 Latest)
-        uses: Nats-ji/delete-old-releases@v1
+        uses: sgpublic/delete-release-action@v1.1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          keep-count: 3
-          remove-tags: true
+          release-drop: true
+          release-keep-count: 2
+          release-drop-tag: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
