@@ -97,7 +97,7 @@ jobs:
 
     steps:
       - name: Delete Old Releases (Keep Only 3 Latest)
-        uses: sgpublic/delete-release-action@v1.1
+        uses: sgpublic/delete-release-action@v1.2
         with:
           release-drop: true
           release-keep-count: 2
