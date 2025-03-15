@@ -40,17 +40,6 @@ jobs:
     needs: create_tag
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        list: 
-          - normal
-          - pro
-        include:
-          - list: normal
-            filename: "multi.txt"
-          - list: pro
-            filename: "pro.txt"
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -72,21 +61,28 @@ jobs:
         run: |
           sing-box version
 
-      - name: Download HaGeZi List - ${{ matrix.list }}
+      - name: Define file mapping
         run: |
-          wget -O hagezi-${{ matrix.list }}.txt "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/${{ matrix.filename }}"
+          FILE_MAP="normal:multi.txt pro:pro.txt"
+          echo "FILE_MAP=$FILE_MAP" >> $GITHUB_ENV
 
-      - name: Convert List to Binary Rule-set - ${{ matrix.list }}
+      - name: Download and Convert HaGeZi Rule-sets
         run: |
-          sing-box rule-set convert --type adguard --output hagezi-${{ matrix.list }}.srs hagezi-${{ matrix.list }}.txt
-          echo "Generated rule-set: hagezi-${{ matrix.list }}.srs"
-          ls -lh hagezi-${{ matrix.list }}.srs
+          for pair in $FILE_MAP; do
+            list=$(echo "$pair" | cut -d':' -f1)
+            filename=$(echo "$pair" | cut -d':' -f2)
 
-      - name: Upload to Release - ${{ matrix.list }}
+            wget -O hagezi-$list.txt "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/$filename"
+            sing-box rule-set convert --type adguard --output hagezi-$list.srs hagezi-$list.txt
+            echo "Generated rule-set: hagezi-$list.srs"
+            ls -lh hagezi-$list.srs
+          done
+
+      - name: Upload to Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.create_tag.outputs.tag_name }}
-          files: hagezi-${{ matrix.list }}.srs
+          files: hagezi-*.srs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
